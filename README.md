@@ -2,43 +2,75 @@
 A simple API for creating Pub/Sub channels using [lettuce](https://github.com/redis/lettuce).
 
 
-## Use
-How include the API with Maven:
-```xml
-<respositories>
-    <repository>
-        <id>github</id>
-        <url>https://maven.pkg.github.com/eupedroosouza/channels</url>
-    </repository>
-</respositories>
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/eupedroosouza/channels/build.yml)
+![GitHub License](https://img.shields.io/github/license/eupedroosouza/channels)
+![GitHub Release](https://img.shields.io/github/v/release/eupedroosouza/channels)
 
+# Use/Install
+See all versions available in [releases](https://github.com/eupedroosouza/channels/releases).
+### Maven
+```xml
 <dependencies>
     <dependency>
-        <groupId>com.github.eupedroosouza</groupId>
+        <groupId>io.github.eupedroosouza</groupId>
         <artifactId>channels</artifactId>
         <version>x.y.z</version>
     </dependency>
 </dependencies>
 ```
+If you want to use snapshots of the new versions not yet released:
+```xml
+<repositories>
+    <repository>
+        <id>sonatype-snapshots</id>
+        <name>Sonatype Snapshot Repository</name>
+        <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+</repositories>
 
-How include the API with Gradle (Groovy):
+<dependencies>
+    <dependency>
+        <groupId>io.github.eupedroosouza</groupId>
+        <artifactId>channels</artifactId>
+        <version>x.y.z-SNASPHOT</version>
+    </dependency>
+</dependencies>
+```
+
+### Gradle
+
+#### Gradle With Groovy
+````groovy
+dependencies {
+    implementation "io.github.eupedroosouza:channels:x.y.z"
+}
+````
+If you want to use snapshots of the new versions not yet released:
 ```groovy
 repositories {
-    maven { url 'https://maven.pkg.github.com/eupedroosouza/channels' }
+    maven { url 'https://central.sonatype.com/repository/maven-snapshots/' }
 }
 dependencies {
-    implementation "com.github.eupedroosouza:channels:x.y.z"
+    implementation "io.github.eupedroosouza:channels:x.y.z-SNAPSHOT"
 }
 ```
 
-How include the API with Gradle (Kotlin DSL):
-```groovy
-repositories {
-    maven("https://maven.pkg.github.com/eupedroosouza/channels")
-}
+#### Gradle with Kotlin DSL
+```kotlin
 dependencies {
-    implementation("com.github.eupedroosouza:channels:x.y.z")
+    implementation("io.github.eupedroosouza:channels:x.y.z")
 }
 ```
-Replace x.y.z with your preferred version, see versions in [packages](https://github.com/eupedroosouza/channels/packages/2436137).
+If you want to use snapshots of the new versions not yet released:
+```kotlin
+repositories {
+    maven("https://central.sonatype.com/repository/maven-snapshots/")
+}
+dependencies {
+    implementation("io.github.eupedroosouza:channels:x.y.z-SNAPSHOT")
+}
+```
 
