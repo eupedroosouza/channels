@@ -1,19 +1,12 @@
 name: Publish
 
 on:
-  workflow_run:
-    workflows: [ "Build" ]
-    branches: [ "main" ]
-    types:
-      - completed
-
-env:
-  REPOSITORY_USERNAME: ${{ secrets.PACKAGES_REPOSITORY_USERNAME }}
-  REPOSITORY_PASSWORD: ${{ secrets.PACKAGES_REPOSITORY_TOKEN }}
+  workflow_dispatch:
+  release:
+    types: [ created ]
 
 jobs:
   publish:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +21,9 @@ jobs:
           gradle-version: wrapper
           cache-read-only: true
       - name: Publish
-        run: gradle publish
+        run: gradle publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
-          REPO_USERNAME: ${{ github.repository_owner }}
-          REPO_PASSWORD: ${{ secrets.CHANNELS_REPO }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

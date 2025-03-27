@@ -2,6 +2,8 @@ plugins {
     id("java")
     id("java-library")
     id("maven-publish")
+    id("signing")
+    alias(libs.plugins.nexusPublishPlugin)
     alias(libs.plugins.indraSpotless)
 }
 
@@ -44,23 +46,62 @@ tasks {
 }
 
 publishing {
-    repositories {
-        maven("https://maven.pkg.github.com/eupedroosouza/channels") {
-            credentials {
-                username = System.getenv("REPO_USERNAME")
-                password = System.getenv("REPO_PASSWORD")
-            }
-        }
-    }
     publications {
         create<MavenPublication>(project.name) {
             from(components["java"])
 
-            groupId = project.group.toString()
-            artifactId = project.name
-            version = project.version.toString()
+            pom {
+                name.set("channels")
+                description.set("A simple API for creating Pub/Sub channels using lettuce")
+                url.set("https://github.com/eupedroosouza/channels")
+
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("http://www.opensource.org/licenses/mit-license.php")
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set("eupedroosouza")
+                        name.set("Pedro Souza")
+                        email.set("66704494+eupedroosouza@users.noreply.github.com")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:git://github.com/eupedroosouza/channels.git")
+                    developerConnection.set("scm:git:ssh://github.com/eupedroosouza/channels.git")
+                    url.set("https://github.com/eupedroosouza/channels")
+                }
+            }
         }
     }
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+            username.set(project.findProperty("sonatype.username")?.toString() ?: System.getenv("SONATYPE_USERNAME"))
+            password.set(project.findProperty("sonatype.password")?.toString() ?: System.getenv("SONATYPE_PASSWORD"));
+        }
+    }
+}
+
+signing {
+    val signedKey = project.findProperty("signed.key")?.toString() ?: System.getenv("GPG_SECRET_KEY")
+    val signedPassword = project.findProperty("signed.password")?.toString() ?: System.getenv("GPG_PASSPHRASE")
+
+    if (signedKey != null && signedPassword != null) {
+        useInMemoryPgpKeys(signedKey, signedPassword)
+    } else {
+        useGpgCmd()
+    }
+
+    sign(publishing.publications[project.name])
 }
 
 indraSpotlessLicenser {
