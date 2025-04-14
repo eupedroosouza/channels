@@ -25,6 +25,7 @@
 package com.github.eupedroosouza.channels.channel.reactive;
 
 import com.github.eupedroosouza.channels.channel.SubChannel;
+import com.github.eupedroosouza.channels.reactive.Observable;
 import com.github.eupedroosouza.channels.reactive.SimpleObservable;
 import com.github.eupedroosouza.channels.util.Builder;
 import io.lettuce.core.RedisClient;
@@ -42,7 +43,7 @@ public class ReactiveSubChannel<T> implements Closeable {
         return new ReactiveSubChannelBuilder<>();
     }
 
-    private final SimpleObservable<ReactiveMessage<T>> observable;
+    private final Observable<ReactiveMessage<T>> observable;
     private final SubChannel<T> subChannel;
 
     private ReactiveSubChannel(ReactiveSubChannelBuilder<T> builder) {
@@ -78,7 +79,7 @@ public class ReactiveSubChannel<T> implements Closeable {
         observable.emit(new ReactiveMessage<>(channel, message));
     }
 
-    public SimpleObservable<ReactiveMessage<T>> getObservable() {
+    public Observable<ReactiveMessage<T>> getObservable() {
         return observable;
     }
 
@@ -88,7 +89,7 @@ public class ReactiveSubChannel<T> implements Closeable {
         private RedisCodec<?, T> codec;
         private @Nullable Executor executor;
 
-        private SimpleObservable<ReactiveMessage<T>> observable;
+        private Observable<ReactiveMessage<T>> observable;
 
         public ReactiveSubChannelBuilder<T> client(@NotNull RedisClient client) {
             this.client = client;
@@ -117,12 +118,12 @@ public class ReactiveSubChannel<T> implements Closeable {
             return executor;
         }
 
-        public ReactiveSubChannelBuilder<T> observable(@NotNull SimpleObservable<ReactiveMessage<T>> observable) {
+        public ReactiveSubChannelBuilder<T> observable(@NotNull Observable<ReactiveMessage<T>> observable) {
             this.observable = observable;
             return this;
         }
 
-        public SimpleObservable<ReactiveMessage<T>> observable() {
+        public Observable<ReactiveMessage<T>> observable() {
             return observable;
         }
 

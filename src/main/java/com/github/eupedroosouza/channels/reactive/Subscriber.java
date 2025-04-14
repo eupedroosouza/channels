@@ -24,6 +24,9 @@
 
 package com.github.eupedroosouza.channels.reactive;
 
-public interface Observable<T>  extends Subscriber<T>, Emitter<T> {
+public interface Subscriber<T> {
+
+    ObservableSubscription<T> subscribe(ObservableSubscriber<T> subscriber);
+    boolean unsubscribe(ObservableSubscription<T> subscription);
 
 }

@@ -24,6 +24,35 @@
 
 package com.github.eupedroosouza.channels.reactive;
 
-public interface Observable<T>  extends Subscriber<T>, Emitter<T> {
+public class SingleObservable<T> implements Observable<T> {
+
+    public static <T> SingleObservable<T> create(ObservableSubscriber<T> subscriber) {
+        return new SingleObservable<>(subscriber);
+    }
+
+    private final ObservableSubscription<T> subscription;
+
+    public SingleObservable(ObservableSubscriber<T> subscriber) {
+        this.subscription = new ObservableSubscription<>(this, subscriber);
+    }
+
+    @Override
+    public void emit(T value) {
+        try {
+            subscription.getSubscriber().onNext(value);
+        } catch (Throwable t) {
+            subscription.getSubscriber().onError(t);
+        }
+    }
+
+    @Override
+    public ObservableSubscription<T> subscribe(ObservableSubscriber<T> subscriber) {
+        return subscription;
+    }
+
+    @Override
+    public boolean unsubscribe(ObservableSubscription<T> subscription) {
+        return false;
+    }
 
 }

@@ -43,21 +43,16 @@ public class SimpleObservable<T> implements Observable<T> {
         return subscriptions.remove(subscription);
     }
 
-    @SafeVarargs
-    public final void emit(T... values) {
-        if (subscriptions.isEmpty() || values.length == 0) {
+    @Override
+    public void emit(T value) {
+        if (value == null || subscriptions.isEmpty()) {
             return;
         }
         for (ObservableSubscription<T> subscription : subscriptions) {
-            for (T value : values) {
-                if (value == null) {
-                    continue;
-                }
-                try {
-                    subscription.getSubscriber().onNext(value);
-                } catch (Throwable t) {
-                    subscription.getSubscriber().onError(t);
-                }
+            try {
+                subscription.getSubscriber().onNext(value);
+            } catch (Throwable t) {
+                subscription.getSubscriber().onError(t);
             }
         }
     }
