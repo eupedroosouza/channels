@@ -26,6 +26,9 @@ package com.gitub.eupedroosouza.channels.tests;
 
 import com.github.eupedroosouza.channels.channel.PubChannel;
 import com.github.eupedroosouza.channels.channel.SubChannel;
+import com.github.eupedroosouza.channels.channel.reactive.ReactiveMessage;
+import com.github.eupedroosouza.channels.channel.reactive.ReactiveSubChannel;
+import com.github.eupedroosouza.channels.reactive.SimpleObservable;
 import com.github.fppt.jedismock.RedisServer;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.codec.StringCodec;
@@ -40,7 +43,9 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ChannelTests {
 
     private static final String CHANNEL_NAME = "test:channel";
+    private static final String REACTIVE_CHANNEL_NAME = "test:reactive:channel";
     private static final String MESSAGE = "PING";
+    private static final SimpleObservable<ReactiveMessage<String>> OBSERVER = new SimpleObservable<>();
 
     private static final CountDownLatch latch = new CountDownLatch(1);
     private static RedisServer server;
@@ -48,6 +53,7 @@ public class ChannelTests {
 
     private static PubChannel<String> pubChannel;
     private static SubChannel<String> subChannel;
+    private static ReactiveSubChannel<String> reactiveSubChannel;
 
     private static final AtomicReference<String> receivedChannel = new AtomicReference<>();
     private static final AtomicReference<String> receivedMessage = new AtomicReference<>();
@@ -77,9 +83,21 @@ public class ChannelTests {
         subChannel.sub(CHANNEL_NAME, (channel, message) -> {
             receivedChannel.set(channel);
             receivedMessage.set(message);
-            System.out.println();
             latch.countDown();
         });
+
+        reactiveSubChannel = ReactiveSubChannel.<String>builder()
+                .client(client)
+                .codec(StringCodec.UTF8)
+                .observable(OBSERVER)
+                .build();
+        reactiveSubChannel.connect();
+        OBSERVER.subscribe(value -> {
+            receivedChannel.set(value.getChannel());
+            receivedMessage.set(value.getMessage());
+            latch.countDown();
+        });
+        reactiveSubChannel.sub(REACTIVE_CHANNEL_NAME);
     }
 
     @Test
@@ -95,6 +113,8 @@ public class ChannelTests {
     public void subTest() {
         Assertions.assertEquals(CHANNEL_NAME, receivedChannel.get());
         Assertions.assertEquals(MESSAGE, receivedMessage.get());
+        receivedChannel.set(null);
+        receivedMessage.set(null);
     }
 
     @Test
@@ -103,8 +123,26 @@ public class ChannelTests {
         Assertions.assertDoesNotThrow(() -> subChannel.unsub(CHANNEL_NAME));
     }
 
+    @Test
+    @Order(4)
+    void reactiveSend() throws InterruptedException, ExecutionException {
+        long publishedChannels = pubChannel.pub(REACTIVE_CHANNEL_NAME, MESSAGE).get();
+        Assertions.assertEquals(1, publishedChannels);
+        latch.await();
+    }
+
+    @Test
+    @Order(5)
+    void reactiveCheck() {
+        Assertions.assertEquals(REACTIVE_CHANNEL_NAME, receivedChannel.get());
+        Assertions.assertEquals(MESSAGE, receivedMessage.get());
+    }
+
     @AfterAll
     public static void shutdown() throws IOException {
+        if (reactiveSubChannel != null) {
+            reactiveSubChannel.close();
+        }
         if (pubChannel != null) {
             pubChannel.close();
         }
