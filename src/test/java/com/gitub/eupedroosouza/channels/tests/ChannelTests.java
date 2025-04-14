@@ -55,8 +55,8 @@ public class ChannelTests {
     private static SubChannel<String> subChannel;
     private static ReactiveSubChannel<String> reactiveSubChannel;
 
-    private static final AtomicReference<String> receivedChannel = new AtomicReference<>();
-    private static final AtomicReference<String> receivedMessage = new AtomicReference<>();
+    private static AtomicReference<String> receivedChannel = new AtomicReference<>();
+    private static AtomicReference<String> receivedMessage = new AtomicReference<>();
 
     @BeforeAll
     public static void setup() throws IOException {
@@ -113,8 +113,6 @@ public class ChannelTests {
     public void subTest() {
         Assertions.assertEquals(CHANNEL_NAME, receivedChannel.get());
         Assertions.assertEquals(MESSAGE, receivedMessage.get());
-        receivedChannel.set(null);
-        receivedMessage.set(null);
     }
 
     @Test
@@ -126,6 +124,8 @@ public class ChannelTests {
     @Test
     @Order(4)
     void reactiveSend() throws InterruptedException, ExecutionException {
+        receivedChannel = new AtomicReference<>();
+        receivedMessage = new AtomicReference<>();
         long publishedChannels = pubChannel.pub(REACTIVE_CHANNEL_NAME, MESSAGE).get();
         Assertions.assertEquals(1, publishedChannels);
         latch.await();
